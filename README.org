@@ -9,7 +9,7 @@ Encrypted password/notes and totp manager written in Rust.
 #+END_CENTER
 
 * Table of Contents :toc:
-- [[#-features][ Features]]
+- [[#-features][󰙴 Features]]
 - [[#-install][󰇚 Install]]
   - [[#-cargo-recommended][ Cargo (Recommended)]]
   - [[#-binary][ Binary]]
@@ -29,11 +29,11 @@ Encrypted password/notes and totp manager written in Rust.
 - [[#donate][Donate]]
 - [[#-license][󰿃 License]]
 
-*  Features
--  CLI based (interactive & args)
-- 󰦝 Encrypted Password/Note manager
-- 󰦝 Encrypted TOTP manager
--  Generate passwords and passphrases (bip-39 wordlist...can be changed)
+* 󰙴 Features
+- 󰆍 CLI based (interactive & args)
+- 󰳌 Encrypted Password/Note manager
+- 󰳌 Encrypted TOTP manager
+- 󰌋 Generate passwords and passphrases (bip-39 wordlist...can be changed)
 - Custom text editor for managing notes (, nano, notepad 󰨡, etc.)
 - Auto-backups available in setup
 - Auto-copy generated passwords/passphrases to clipboard (disabled by default)
@@ -93,8 +93,7 @@ autobackup = true
 ** Wordlist
 On startup, the file https://raw.githubusercontent.com/bitcoin/bips/master/bip-0039/english.txt will be downloaded to the config directory stated above and named ~wordlist.txt~. This is a list of 2048 words used for wallet seed phrase generation.
 
-When directed to generate a passphrase, ~blackout~ will choose the given number of words randomly from this list and capitalize each chosen word with a probability of 0.5. Thus, by default, there are
-LaTeX: $n^4096$ possibilities, where $n$ is the number words to be generated in the passphrase.
+When directed to generate a passphrase, ~blackout~ will choose the given number of words randomly from this list and capitalize each chosen word with a probability of 0.5. Thus, by default, there are $n^{4096}$ possibilities, where $n$ is the number words to be generated in the passphrase.
 
 Any words added to this file are able to be chosen by the passphrase generator. Entries MUST be on a newline (no comma separated lists, no space separated lists).
 
