@@ -9,17 +9,17 @@ Encrypted password/notes and totp manager written in Rust.
 #+END_CENTER
 
 * Table of Contents :toc:
-- [[#-features][󰙴 Features]]
-- [[#-install][󰇚 Install]]
-  - [[#-cargo-recommended][ Cargo (Recommended)]]
-  - [[#-binary][ Binary]]
-  - [[#-compile-source][ Compile source]]
-- [[#-configuration][ Configuration]]
+- [[#-features][✨ Features]]
+- [[#-install][📥 Install]]
+  - [[#cargo-recommended][Cargo (Recommended)]]
+  - [[#binary][Binary]]
+  - [[#compile-source][Compile source]]
+- [[#-configuration][⚙ Configuration]]
   - [[#config-file][Config file]]
   - [[#wordlist][Wordlist]]
-- [[#-security][ Security]]
-  - [[#-encryption][󰦝 Encryption]]
-- [[#-usage][ Usage]]
+- [[#-️security][🛡 ️Security]]
+  - [[#encryption][Encryption]]
+- [[#usage][Usage]]
   - [[#general][General]]
   - [[#add-note-or-totp-url][Add note or totp url]]
   - [[#export-data-for-migration-or-for-parsing][Export data for migration or for parsing]]
@@ -27,27 +27,27 @@ Encrypted password/notes and totp manager written in Rust.
   - [[#generate-passwordpassphrase][Generate password/passphrase]]
   - [[#list-notes-or-totp-labels-only][List notes or totp (LABELS ONLY)]]
 - [[#donate][Donate]]
-- [[#-license][󰿃 License]]
+- [[#license][License]]
 
-* 󰙴 Features
+* ✨ Features
 - ⌨ CLI based (interactive & args)
-- 󰳌 Encrypted Password/Note manager
-- 󰳌 Encrypted TOTP manager
-- 󰌋 Generate passwords and passphrases (bip-39 wordlist...can be changed)
-- Custom text editor for managing notes (, nano, notepad 󰨡, etc.)
+- 🔒 Encrypted Password/Note manager
+- 🔒 Encrypted TOTP manager
+- 🔑 Generate passwords and passphrases (bip-39 wordlist...can be changed)
+- Custom text editor for managing notes (vim, nano, notepad, etc.)
 - Auto-backups available in setup
 - Auto-copy generated passwords/passphrases to clipboard (disabled by default)
 
-* 󰇚 Install
-**  Cargo (Recommended)
+* 📥 Install
+** Cargo (Recommended)
 ~blackout~ can be installed from [[https://crates.io/crates/rtwo][crates.io]].
 
 ~cargo install blackout~
 
-**  Binary
+** Binary
 You can download the pre-built binaries from the [[https://github.com/jandrus/blackout/releases][release page]].
 
-**  Compile source
+** Compile source
 *** Prerequisites:
 - [[https://www.rust-lang.org/][Rust]]
 - [[https://doc.rust-lang.org/cargo/][Cargo package manager]].
@@ -60,9 +60,9 @@ cargo build --release
 
 This will produce an binary executable file at ~target/release/blackout~ that you can copy to a directory in your ~$PATH~.
 
-*  Configuration
+* ⚙ Configuration
 ** Config file
-*/Note/*: If the configuration file does not exist at startup, the user will be prompted to guided through a generation prompt.
+*Note*: If the configuration file does not exist at startup, the user will be prompted to guided through a generation prompt.
 
 *** Location
 The configuration file is located in:
@@ -97,8 +97,8 @@ When directed to generate a passphrase, ~blackout~ will choose the given number 
 
 Any words added to this file are able to be chosen by the passphrase generator. Entries MUST be on a newline (no comma separated lists, no space separated lists).
 
-*  Security
-** 󰦝 Encryption
+* 🛡 ️Security
+** Encryption
 ~blackout~ uses [[https://github.com/sqlcipher/sqlcipher][SQLCipher]] which is a fork of SQLite that adds 256 bit AES encryption of database files and other security features like:
 - on-the-fly encryption
 - tamper detection
@@ -106,9 +106,9 @@ Any words added to this file are able to be chosen by the passphrase generator. 
 - strong key derivation
 - algorithms provided by the peer reviewed OpenSSL crypto library
 
-*  Usage
+* Usage
 ** General
- Note: ~blackout~ uses both a ~pacman~ and ~cargo~ approach to args.
+*Note*: ~blackout~ uses both a ~pacman~ and ~cargo~ approach to args.
 #+BEGIN_SRC shell
 Usage: blackout [OPTIONS] [COMMAND]
 
@@ -147,7 +147,7 @@ Examples:
 + ~blackout add totp~ OR ~blackout -AT~: Add totp url via prompt.
 
 ** Export data for migration or for parsing
-* WARNING: For migrating to a new machine, there is no need to move clear text data*{@style="color:yellow;"}
+⚠ WARNING: For migrating to a new machine, there is no need to move clear text data
 The default behavior is to copy the encrypted database to the current working directory (CWD), data remains encrypted. Use the json or toml flag to export data for use with other programs.
 #+BEGIN_SRC shell
 Export note or totp data [Default behavior is to copy the encrypted database to CWD]
@@ -290,10 +290,10 @@ Examples:
 
 
 * Donate
--  *BTC*: ~bc1qvx8q2xxwesw22yvrftff89e79yh86s56y2p9x9~
--  *XMR*: ~84t9GUWQVJSGxF8cbMtRBd67YDAHnTsrdWVStcdpiwcAcAnVy21U6RmLdwiQdbfsyu16UqZn6qj1gGheTMkHkYA4HbVN4zS~
+- *BTC*: ~bc1qvx8q2xxwesw22yvrftff89e79yh86s56y2p9x9~
+- *XMR*: ~84t9GUWQVJSGxF8cbMtRBd67YDAHnTsrdWVStcdpiwcAcAnVy21U6RmLdwiQdbfsyu16UqZn6qj1gGheTMkHkYA4HbVN4zS~
 
-* 󰿃 License
+* License
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
