@@ -30,7 +30,7 @@ Encrypted password/notes and totp manager written in Rust.
 - [[#-license][󰿃 License]]
 
 * 󰙴 Features
-- 󰆍 CLI based (interactive & args)
+- ⌨ CLI based (interactive & args)
 - 󰳌 Encrypted Password/Note manager
 - 󰳌 Encrypted TOTP manager
 - 󰌋 Generate passwords and passphrases (bip-39 wordlist...can be changed)
