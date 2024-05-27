@@ -1,10 +1,11 @@
 #+TITLE: Blackout
 #+AUTHOR: James Andrus
-#+DESCRIPTION: Encrypted password/notes and totp manager written in Rust.
 
-#+CAPTION: Demo
-#+ATTR_CENTER:
-[[./example/init.gif]]
+#+BEGIN_CENTER
+Encrypted password/notes and totp manager written in Rust.
+#+END_CENTER
+
+#+IMAGE: ./examples/init.gif
 
 * Table of Contents :toc:
 - [[#-features][✨ Features]]
