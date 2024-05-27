@@ -1,13 +1,9 @@
 #+TITLE: Blackout
 #+AUTHOR: James Andrus
 
-#+BEGIN_CENTER
-Encrypted password/notes and totp manager written in Rust.
-#+END_CENTER
+#+html: <p align="center">Encrypted password/notes and totp manager written in Rust.</p>
 
-![usage](https://github.com/jandrus/blackout/blob/main/examples/usage.gif?raw=true)
-#+html: <p align="center"><img src="https://github.com/jandrus/blackout/blob/main/examples/usage.gif?raw=true" /></p>
-
+#+html: <p align="center"><img src="https://github.com/jandrus/blackout/blob/main/examples/demo.gif?raw=true" /></p>
 
 * Table of Contents :toc:
 - [[#-features][✨ Features]]
@@ -41,7 +37,7 @@ Encrypted password/notes and totp manager written in Rust.
 
 * 📥 Install
 ** Cargo (Recommended)
-~blackout~ can be installed from [[https://crates.io/crates/rtwo][crates.io]].
+~blackout~ can be installed from [[https://crates.io/crates/blackout][crates.io]].
 
 ~cargo install blackout~
 
@@ -108,6 +104,9 @@ Any words added to this file are able to be chosen by the passphrase generator. 
 - algorithms provided by the peer reviewed OpenSSL crypto library
 
 * Usage
+
+#+html: <p align="center"><img src="https://github.com/jandrus/blackout/blob/main/examples/usage.gif?raw=true" /></p>
+
 ** General
 *Note*: ~blackout~ uses both a ~pacman~ and ~cargo~ approach to args.
 #+BEGIN_SRC shell
