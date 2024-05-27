@@ -1,12 +1,10 @@
 #+TITLE: Blackout
 #+AUTHOR: James Andrus
+#+DESCRIPTION: Encrypted password/notes and totp manager written in Rust.
 
-#+BEGIN_CENTER
-BLACKOUT
-#+END_CENTER
-#+BEGIN_CENTER
-Encrypted password/notes and totp manager written in Rust.
-#+END_CENTER
+#+CAPTION: Demo
+#+ATTR_CENTER:
+[[./example/init.gif]]
 
 * Table of Contents :toc:
 - [[#-features][✨ Features]]
@@ -114,7 +112,7 @@ Usage: blackout [OPTIONS] [COMMAND]
 
 Commands:
   add, -A       Add note or totp url
-  export, -E    Export note or totp data [Default behavior is to copy the emcrypted database to CWD]
+  export, -E    Export note or totp data [Default behavior is to copy the encrypted database to CWD]
   fetch, -F     Fetch notes or totp
   generate, -G  Generate password/passphrase
   list, -L      List note or totp labels only
@@ -239,7 +237,7 @@ Usage: blackout generate {pass|-W} [OPTIONS]
 
 Options:
   -l, --length <LENGTH>  length of password. Interactive allows for more options [DEFAULT: 15]
-  -i, --interactive      Interractive mode
+  -i, --interactive      Interactive mode
   -h, --help             Print help
 #+END_SRC
 
@@ -273,8 +271,8 @@ List note or totp labels only
 Usage: blackout {list|-L} [COMMAND]
 
 Commands:
-  note, -N  List note lables
-  notes     List note lables
+  note, -N  List note labels
+  notes     List note labels
   totp, -T  List TOTP labels
   help      Print this message or the help of the given subcommand(s)
 
@@ -282,7 +280,6 @@ Options:
   -h, --help  Print help
 #+END_SRC
 
-#FIXME
 Examples:
 + ~blackout export~ OR ~blackout -E~: Export blackout database. DATA REMAINS ENCRYPTED
 + ~blackout export -j~ OR ~blackout -Ej~: Export notes and totp urls to json format. NOT ENCRYPTED
