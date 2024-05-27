@@ -5,8 +5,9 @@
 Encrypted password/notes and totp manager written in Rust.
 #+END_CENTER
 
-#+IMAGE: https://github.com/jandrus/blackout/blob/main/examples/usage.gif?raw=true
 ![usage](https://github.com/jandrus/blackout/blob/main/examples/usage.gif?raw=true)
+<p align="center"><img src="examples/usage.gif" /></p>
+
 
 * Table of Contents :toc:
 - [[#-features][✨ Features]]
