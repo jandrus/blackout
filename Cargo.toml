@@ -1,7 +1,15 @@
 [package]
 name = "blackout"
 version = "0.1.0"
+authors = ["James Andrus"]
+license = "GPL-3.0"
 edition = "2021"
+description = "Encrypted password/notes and totp manager written in Rust"
+categories = ["command-line-utilities"]
+readme = "README.org"
+homepage = "https://github.com/jandrus/"
+repository = "https://github.com/jandrus/"
+exclude = ["demo"]
 
 [lib]
 name = "lib"
