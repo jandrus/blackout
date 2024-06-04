@@ -251,7 +251,7 @@ fn main() {
                                 }
                             }
                         }
-                        false => match select_entry(&pass, conf.color, db::EntryType::Note) {
+                        false => match select_entry(&pass, conf.color, &db::EntryType::Note) {
                             Ok(ent) => ent,
                             Err(e) => {
                                 kill(&format!("Error getting entry from user: {}", e), &conf);
@@ -280,7 +280,7 @@ fn main() {
                                 }
                             }
                         }
-                        false => match select_entry(&pass, conf.color, db::EntryType::Totp) {
+                        false => match select_entry(&pass, conf.color, &db::EntryType::Totp) {
                             Ok(ent) => ent,
                             Err(e) => {
                                 kill(&format!("Error getting entry from user: {}", e), &conf);
@@ -544,7 +544,7 @@ fn main() {
             // DELETE Note or Totp
             Action::Delete => match get_subaction(&password, Action::Delete, conf.color).unwrap() {
                 SubAction::Note => {
-                    let entry = match select_entry(&password, conf.color, db::EntryType::Note) {
+                    let entry = match select_entry(&password, conf.color, &db::EntryType::Note) {
                         Ok(ent) => ent,
                         Err(e) => {
                             kill(&format!("Error getting entry from user: {}", e), &conf);
@@ -571,7 +571,7 @@ fn main() {
                     has_edited = true;
                 }
                 SubAction::Totp => {
-                    let entry = match select_entry(&password, conf.color, db::EntryType::Totp) {
+                    let entry = match select_entry(&password, conf.color, &db::EntryType::Totp) {
                         Ok(t) => t,
                         Err(e) => {
                             kill(&format!("Error getting entry from user: {}", e), &conf);
@@ -600,66 +600,23 @@ fn main() {
                     }
                     has_edited = true;
                 }
-                _ => unreachable!("Invalid subaction for ADD"),
+                _ => unreachable!("Invalid subaction for Delete"),
             },
             // EDIT Note or Totp
             Action::Edit => match get_subaction(&password, Action::Edit, conf.color).unwrap() {
                 SubAction::Note => {
-                    let mut entry = match select_entry(&password, conf.color, db::EntryType::Note) {
-                        Ok(ent) => ent,
-                        Err(e) => {
-                            kill(&format!("Error getting entry from user: {}", e), &conf);
-                        }
-                    };
-                    if let Some(content) = Editor::new()
-                        .executable(&conf.editor)
-                        .require_save(true)
-                        .edit(&entry.content)
-                        .unwrap()
-                    {
-                        entry.content = content;
-                    }
-                    match db::update_entry(&password, entry) {
-                        Ok(_) => lib::fmt_print("Update saved", lib::ContentType::Success, &conf),
-                        Err(e) => {
-                            kill(&format!("Error updating entry: {}", e), &conf);
-                        }
+                    if let Err(e) = edit_entry(&password, db::EntryType::Note, &conf) {
+                        kill(&format!("Error updating note: {}", e), &conf);
                     }
                     has_edited = true;
                 }
                 SubAction::Totp => {
-                    let mut entry = match select_entry(&password, conf.color, db::EntryType::Totp) {
-                        Ok(t) => t,
-                        Err(e) => {
-                            kill(&format!("Error getting entry from user: {}", e), &conf);
-                        }
-                    };
-                    let content = match conf.color {
-                        true => Password::with_theme(&ColorfulTheme::default())
-                            .with_prompt("Enter totp URL")
-                            .validate_with(|input: &String| -> Result<(), String> {
-                                sec::validate_totp(input)
-                            })
-                            .interact()
-                            .unwrap(),
-                        false => Password::new()
-                            .with_prompt("Enter totp URL")
-                            .validate_with(|input: &String| -> Result<(), String> {
-                                sec::validate_totp(input)
-                            })
-                            .interact()
-                            .unwrap(),
-                    };
-                    entry.content = content;
-                    match db::update_entry(&password, entry) {
-                        Ok(_) => lib::fmt_print("Update saved", lib::ContentType::Success, &conf),
-                        Err(e) => {
-                            kill(&format!("Error updating entry: {}", e), &conf);
-                        }
+                    if let Err(e) = edit_entry(&password, db::EntryType::Totp, &conf) {
+                        kill(&format!("Error updating totp: {}", e), &conf);
                     }
                     has_edited = true;
                 }
-                _ => unreachable!("Invalid subaction for ADD"),
+                _ => unreachable!("Invalid subaction for Edit"),
             },
             // EXIT
             Action::Exit => {
@@ -736,7 +693,7 @@ fn main() {
             // FETCH Note or Totp
             Action::Fetch => match get_subaction(&password, Action::Fetch, conf.color).unwrap() {
                 SubAction::Note => {
-                    let entry = match select_entry(&password, conf.color, db::EntryType::Note) {
+                    let entry = match select_entry(&password, conf.color, &db::EntryType::Note) {
                         Ok(ent) => ent,
                         Err(e) => {
                             kill(&format!("Error getting entry from user: {}", e), &conf);
@@ -747,7 +704,7 @@ fn main() {
                     }
                 }
                 SubAction::Totp => {
-                    let entry = match select_entry(&password, conf.color, db::EntryType::Totp) {
+                    let entry = match select_entry(&password, conf.color, &db::EntryType::Totp) {
                         Ok(ent) => ent,
                         Err(e) => {
                             kill(&format!("Error getting entry from user: {}", e), &conf);
@@ -808,6 +765,85 @@ fn main() {
     } else {
         println!("Goodbye");
     }
+}
+
+fn edit_entry(
+    pass: &SecVec<u8>,
+    entry_type: db::EntryType,
+    conf: &lib::BlackoutConfig,
+) -> Result<()> {
+    let mut entry = select_entry(pass, conf.color, &entry_type)?;
+    let orig_entry = entry.clone();
+    let attr_to_edit = match entry_type {
+        db::EntryType::Note => lib::get_selection_from_user(
+            "Edit label, catagory, or note",
+            true,
+            &["label".to_owned(), "catagory".to_owned(), "note".to_owned()],
+            conf.color,
+        )?,
+        db::EntryType::Totp => lib::get_selection_from_user(
+            "Edit label, catagory, or totp url",
+            true,
+            &[
+                "label".to_owned(),
+                "catagory".to_owned(),
+                "totp url".to_owned(),
+            ],
+            conf.color,
+        )?,
+    };
+    match attr_to_edit {
+        0 => {
+            let labels = db::get_labels(pass, &entry_type, None)?;
+            let label = get_input_from_user("Enter label", &labels, true, conf.color)?;
+            entry.label = label;
+        }
+        1 => {
+            let mut catagories = db::get_catagories(pass, &entry_type)?;
+            catagories.push("Add New".to_string());
+            let catagory_idx =
+                lib::get_selection_from_user("Choose catagory", true, &catagories, conf.color)?;
+            let catagory: String = match catagories[catagory_idx] == "Add New" {
+                true => match conf.color {
+                    true => get_input_from_user("Enter catagory", &catagories, true, conf.color)?,
+                    false => Input::new().with_prompt("Enter catagory").interact_text()?,
+                },
+                false => catagories[catagory_idx].clone(),
+            };
+            entry.catagory = catagory;
+        }
+        _ => match entry_type {
+            db::EntryType::Note => {
+                if let Some(content) = Editor::new()
+                    .executable(&conf.editor)
+                    .require_save(true)
+                    .edit(&entry.content)?
+                {
+                    entry.content = content;
+                }
+            }
+            db::EntryType::Totp => {
+                let content = match conf.color {
+                    true => Password::with_theme(&ColorfulTheme::default())
+                        .with_prompt("Enter totp URL")
+                        .validate_with(|input: &String| -> Result<(), String> {
+                            sec::validate_totp(input)
+                        })
+                        .interact()?,
+                    false => Password::new()
+                        .with_prompt("Enter totp URL")
+                        .validate_with(|input: &String| -> Result<(), String> {
+                            sec::validate_totp(input)
+                        })
+                        .interact()?,
+                };
+                entry.content = content;
+            }
+        },
+    }
+    db::update_entry(pass, entry, orig_entry)?;
+    lib::fmt_print("Update saved", lib::ContentType::Success, &conf);
+    Ok(())
 }
 
 fn get_user_password(prompt: &str, color: bool, new: bool) -> Result<SecVec<u8>> {
@@ -941,8 +977,7 @@ fn list_labels(
             }
         }
     };
-    let mut catagories = db::get_catagories(pass, &entry_type)?;
-    catagories.sort();
+    let catagories = db::get_catagories(pass, &entry_type)?;
     let last_cat = catagories.last().unwrap().clone();
     for catagory in catagories {
         if catagory == last_cat {
@@ -951,8 +986,7 @@ fn list_labels(
             } else {
                 println!("└── {}", catagory);
             }
-            let mut labels = db::get_labels(pass, &entry_type, Some(&catagory))?;
-            labels.sort();
+            let labels = db::get_labels(pass, &entry_type, Some(&catagory))?;
             let last_label = labels.last().unwrap().clone();
             for label in labels {
                 if label == last_label {
@@ -973,8 +1007,7 @@ fn list_labels(
             } else {
                 println!("├── {}", catagory);
             }
-            let mut labels = db::get_labels(pass, &entry_type, Some(&catagory))?;
-            labels.sort();
+            let labels = db::get_labels(pass, &entry_type, Some(&catagory))?;
             let last_label = labels.last().unwrap().clone();
             for label in labels {
                 if label == last_label {
@@ -995,12 +1028,12 @@ fn list_labels(
     Ok(())
 }
 
-fn select_entry(pass: &SecVec<u8>, color: bool, entry_type: db::EntryType) -> Result<db::Entry> {
+fn select_entry(pass: &SecVec<u8>, color: bool, entry_type: &db::EntryType) -> Result<db::Entry> {
     let catagories = db::get_catagories(pass, &entry_type)?;
-    let catagory_idx = lib::get_selection_from_user("Select catagory", false, &catagories, color)?;
+    let catagory_idx = lib::get_selection_from_user("Select catagory", true, &catagories, color)?;
     let catagory = catagories[catagory_idx].clone();
     let labels = db::get_labels(pass, &entry_type, Some(&catagory))?;
-    let label_idx = lib::get_selection_from_user("Select label", false, &labels, color)?;
+    let label_idx = lib::get_selection_from_user("Select label", true, &labels, color)?;
     let label = labels[label_idx].clone();
     db::get_entry(pass, label, &entry_type)
 }

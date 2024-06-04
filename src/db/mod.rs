@@ -22,7 +22,7 @@ use rusqlite::Connection;
 use secstr::{SecStr, SecVec};
 use serde_derive::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Entry {
     pub timestamp: i64,
     pub label: String,
@@ -155,6 +155,7 @@ pub fn get_catagories(pass: &SecVec<u8>, entry_type: &EntryType) -> Result<Vec<S
     for row in rows.into_iter() {
         catagories.push(row?);
     }
+    catagories.sort();
     Ok(catagories)
 }
 
@@ -181,20 +182,43 @@ pub fn get_labels(
     for row in rows {
         labels.push(row?);
     }
+    labels.sort();
     Ok(labels)
 }
 
-pub fn update_entry(pass: &SecVec<u8>, entry: Entry) -> Result<()> {
+pub fn update_entry(pass: &SecVec<u8>, entry: Entry, orig_entry: Entry) -> Result<()> {
     let timestamp = lib::get_timestamp();
     let conn = connect_db(pass)?;
-    let stmt_str = format!(
-        "UPDATE {} SET timestamp='{}',content='{}' WHERE label='{}'",
-        entry.entry_type.table(),
-        timestamp,
-        entry.content,
-        entry.label
-    );
-    conn.execute(&stmt_str, [])?;
+    if entry.content != orig_entry.content {
+        let stmt_str = format!(
+            "UPDATE {} SET timestamp='{}',content='{}' WHERE label='{}'",
+            entry.entry_type.table(),
+            timestamp,
+            entry.content,
+            entry.label
+        );
+        conn.execute(&stmt_str, [])?;
+    }
+    if entry.catagory != orig_entry.catagory {
+        let stmt_str = format!(
+            "UPDATE {} SET timestamp='{}',catagory='{}' WHERE label='{}'",
+            entry.entry_type.table(),
+            timestamp,
+            entry.catagory,
+            entry.label
+        );
+        conn.execute(&stmt_str, [])?;
+    }
+    if entry.label != orig_entry.label {
+        let stmt_str = format!(
+            "UPDATE {} SET timestamp='{}',label='{}' WHERE label='{}'",
+            entry.entry_type.table(),
+            timestamp,
+            entry.label,
+            orig_entry.label
+        );
+        conn.execute(&stmt_str, [])?;
+    }
     Ok(())
 }
 
