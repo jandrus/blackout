@@ -20,7 +20,13 @@ use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha20Rng;
 use totp_rs::TOTP;
 
-#[derive(PartialEq)]
+#[derive(Clone, Debug)]
+pub struct GenerateParams {
+    pub password_options: Vec<PasswordOptions>,
+    pub length: u8,
+}
+
+#[derive(Clone, Debug, PartialEq)]
 pub enum PasswordOptions {
     AlphaLower,
     AlphaUpper,
@@ -36,24 +42,24 @@ const NUMS: &[u8] = b"0123456789";
 const SYMBOLS: &[u8] = b"!#$%&()*+,-./<=>?@[]^_{|}~";
 const SIMILAR_CHARS: &[u8] = b"il1oO0";
 
+pub fn gen_seedphrase(num_words: u8) -> Result<Vec<String>> {
+    let wl = get_words()?;
+    let mut rng = get_rng();
+    let mut seed: Vec<String> = vec![];
+    (0..num_words).for_each(|_| {
+        let idx = rng.gen_range(0..wl.len());
+        seed.push(wl[idx].clone());
+    });
+    Ok(seed)
+}
+
 pub fn gen_passphrase(num_words: u8) -> Result<String> {
-    let wl_file_str = lib::get_project_file(lib::ProjFiles::WordList)?;
-    let wl_str = lib::read_file(&wl_file_str)?;
-    let wl = wl_str.split('\n').collect::<Vec<&str>>();
-    let mut seed: <ChaCha20Rng as SeedableRng>::Seed = Default::default();
-    rand::thread_rng().fill(&mut seed);
-    let mut rng = ChaCha20Rng::from_seed(seed);
+    let wl = get_words()?;
+    let mut rng = get_rng();
     let mut passphrase = String::new();
     (0..num_words).for_each(|_| {
         let idx = rng.gen_range(0..wl.len());
-        let word = match rng.gen_bool(0.5) {
-            true => wl[idx].to_string(),
-            false => {
-                let mut word = wl[idx].to_string();
-                word.remove(0).to_uppercase().to_string() + &word
-            }
-        };
-        passphrase.push_str(&word);
+        passphrase.push_str(wl[idx].as_str());
     });
     Ok(passphrase)
 }
@@ -76,29 +82,39 @@ pub fn validate_totp(otp: &str) -> Result<(), String> {
     }
 }
 
-pub fn gen_pass(password_len: u8, selections: Vec<PasswordOptions>) -> String {
+pub fn gen_pass(gen_params: GenerateParams) -> String {
     let mut char_vec: Vec<u8> = vec![];
-    if selections.contains(&PasswordOptions::Nums) {
+    if gen_params.password_options.contains(&PasswordOptions::Nums) {
         char_vec.append(&mut NUMS.to_owned());
     }
-    if selections.contains(&PasswordOptions::AlphaLower) {
+    if gen_params
+        .password_options
+        .contains(&PasswordOptions::AlphaLower)
+    {
         char_vec.append(&mut ALPHA_LOWER.to_owned());
     }
-    if selections.contains(&PasswordOptions::AlphaUpper) {
+    if gen_params
+        .password_options
+        .contains(&PasswordOptions::AlphaUpper)
+    {
         char_vec.append(&mut ALPHA_UPPER.to_owned());
     }
-    if selections.contains(&PasswordOptions::NoSimilar) {
+    if gen_params
+        .password_options
+        .contains(&PasswordOptions::NoSimilar)
+    {
         for c in SIMILAR_CHARS {
             char_vec.retain(|x| x != c);
         }
     }
-    if selections.contains(&PasswordOptions::Symbols) {
+    if gen_params
+        .password_options
+        .contains(&PasswordOptions::Symbols)
+    {
         char_vec.append(&mut SYMBOLS.to_owned());
     }
-    let mut seed: <ChaCha20Rng as SeedableRng>::Seed = Default::default();
-    rand::thread_rng().fill(&mut seed);
-    let mut rng = ChaCha20Rng::from_seed(seed);
-    (0..password_len)
+    let mut rng = get_rng();
+    (0..gen_params.length)
         .map(|_| {
             let idx = rng.gen_range(0..char_vec.len());
             char_vec[idx] as char
@@ -106,7 +122,7 @@ pub fn gen_pass(password_len: u8, selections: Vec<PasswordOptions>) -> String {
         .collect()
 }
 
-pub fn map_options(i: usize) -> PasswordOptions {
+pub fn pass_map_options(i: usize) -> PasswordOptions {
     match i {
         0 => PasswordOptions::Nums,
         1 => PasswordOptions::AlphaLower,
@@ -115,4 +131,17 @@ pub fn map_options(i: usize) -> PasswordOptions {
         4 => PasswordOptions::NoSimilar,
         _ => PasswordOptions::None,
     }
+}
+
+fn get_words() -> Result<Vec<String>> {
+    let wl_file_str = lib::get_project_file(lib::ProjFiles::WordList)?;
+    let wl_str = lib::read_file(&wl_file_str)?;
+    let wl: Vec<String> = wl_str.split('\n').map(|s| s.to_string()).collect();
+    Ok(wl)
+}
+
+fn get_rng() -> ChaCha20Rng {
+    let mut seed: <ChaCha20Rng as SeedableRng>::Seed = Default::default();
+    rand::thread_rng().fill(&mut seed);
+    ChaCha20Rng::from_seed(seed)
 }

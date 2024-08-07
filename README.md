@@ -8,9 +8,11 @@
 ## ✨ Features
 - ⌨ CLI based (interactive & args)
 - 🔒 Encrypted Password/Note manager
+  - 🛡 ️Hide sensitive information
 - 🔒 Encrypted TOTP manager
-- 🔑 Generate passwords and passphrases (bip-39 wordlist...can be changed)
-- Custom text editor for managing notes (vim, nano, notepad, etc.)
+- 🔑 Generate passwords and passphrases 
+- 🌱 Generate seed phrases (bip-39 wordlist)
+- Customize text editor for managing notes (vim, nano, notepad, etc.)
 - Auto-backups available in setup
 - Auto-copy generated passwords/passphrases to clipboard (disabled by default)
 
@@ -69,9 +71,7 @@ autobackup = true
 ### Wordlist
 On startup, the file https://raw.githubusercontent.com/bitcoin/bips/master/bip-0039/english.txt will be downloaded to the config directory stated above and named `wordlist.txt`. This is a list of 2048 words used for wallet seed phrase generation.
 
-When directed to generate a passphrase, `blackout` will choose the given number of words randomly from this list and capitalize each chosen word with a probability of 0.5. Thus, by default, there are $n^{4096}$ possibilities, where $n$ is the number words to be generated in the passphrase.
-
-Any words added to this file are able to be chosen by the passphrase generator. Entries MUST be on a newline (no comma separated lists, no space separated lists).
+When directed to generate a passphrase, `blackout` will choose the given number of words randomly from this list. Any words added to this file are able to be chosen by the passphrase and seed phrase generator. Entries MUST be on a newline (no comma separated lists, no space separated lists).
 
 ## 🛡 ️Security
 ### Encryption
@@ -87,26 +87,31 @@ Any words added to this file are able to be chosen by the passphrase generator. 
 <img src="https://github.com/jandrus/blackout/blob/main/examples/usage.gif?raw=true">
 
 ### General
-*Note*: `blackout` uses both a `pacman` and `cargo` approach to args.
-```shell
+```
+blackout - Encrypted password/notes and totp manager
+
 Usage: blackout [OPTIONS] [COMMAND]
 
 Commands:
   add, -A       Add note or totp url
-  export, -E    Export note or totp data [Default behavior is to copy the encrypted database to CWD]
+  delete, -D    Delete note or totp url
+  edit, -E      Edit note or totp url
+  export, -X    Export note or totp urls
   fetch, -F     Fetch notes or totp
-  generate, -G  Generate password/passphrase
+  generate, -G  Generate password, passphrase, or seed phrase
   list, -L      List note or totp labels only
   help          Print this message or the help of the given subcommand(s)
 
 Options:
-  -b, --backup   Backup blackout data (saves a snapshot)
-  -h, --help     Print help
-  -V, --version  Print version
+  -b, --backup      Backup blackout data (saves a snapshot)
+  -c, --changepass  Change master blackout password
+  -r, --restore     Restore blackout backup
+  -h, --help        Print help
+  -V, --version     Print version
 ```
 
 ### Add note or totp url
-```shell
+```
 Add note or totp url
 
 Usage: blackout {add|-A} [COMMAND]
@@ -121,31 +126,77 @@ Options:
 ```
 
 Examples:
-+ `blackout add` OR `blackout -A`: Interactively add note or totp url.
-+ `blackout add note` OR `blackout -AN`: Add note via prompt.
-+ `blackout add totp` OR `blackout -AT`: Add totp url via prompt.
+- `blackout add` OR `blackout -A`: Interactively add note or totp url.
+- `blackout add note` OR `blackout -AN`: Add note via prompt.
+- `blackout add totp` OR `blackout -AT`: Add totp url via prompt.
 
-** Export data for migration or for parsing
-⚠ WARNING: For migrating to a new machine, there is no need to move clear text data
-The default behavior is to copy the encrypted database to the current working directory (CWD), data remains encrypted. Use the json or toml flag to export data for use with other programs.
-```shell
-Export note or totp data [Default behavior is to copy the encrypted database to CWD]
+#### Delete note or totp url
+```
+Delete note or totp url
 
-Usage: blackout {export|-E} [OPTIONS]
+Usage: blackout {delete|-D} [COMMAND]
+
+Commands:
+  note, -N  Delete note
+  totp, -T  Delete totp
+  help      Print this message or the help of the given subcommand(s)
 
 Options:
-  -j, --json  Output notes and totp data in json format
-  -t, --toml  Output notes and totp data in toml format
   -h, --help  Print help
 ```
 
 Examples:
-+ `blackout export` OR `blackout -E`: Export blackout database. DATA REMAINS ENCRYPTED
-+ `blackout export -j` OR `blackout -Ej`: Export notes and totp urls to json format. NOT ENCRYPTED
-+ `blackout export -t` OR `blackout -Et`: Export notes and totp urls to toml format. NOT ENCRYPTED
+- `blackout delete` OR `blackout -D`: Interactively delete note or totp url.
+- `blackout delete note` OR `blackout -DN`: Interactively delete note.
+- `blackout delete totp github` OR `blackout -DT github`: Delete totp url labeled *github*.
+
+#### Edit note or totp url
+```
+Edit note or totp url
+
+Usage: blackout {edit|-E} [COMMAND]
+
+Commands:
+  note, -N  Edit note
+  totp, -T  Edit totp url
+  help      Print this message or the help of the given subcommand(s)
+
+Options:
+  -h, --help  Print help
+```
+
+Examples:
+- `blackout edit` OR `blackout -E`: Interactively edit note or totp url.
+- `blackout edit totp` OR `blackout -ET`: Interactively edit totp url.
+- `blackout edit note github` OR `blackout -DN github`: Edit note labeled *github*.
+
+### Export data for migration or for parsing
+⚠ WARNING: For migrating to a new machine, there is no need to move clear text data
+The default behavior is to copy the encrypted database to the current working directory (CWD), data remains encrypted. Use the json or toml flag to export data for use with other programs.
+```
+Export note or totp urls
+
+Usage: blackout {export|-X} [COMMAND]
+
+Commands:
+  both, -B   Export notes and totp url
+  notes, -N  Export notes
+  totps, -T  Export totp urls
+  help       Print this message or the help of the given subcommand(s)
+
+Options:
+  -h, --help  Print help
+```
+
+Examples:
++ `blackout export` OR `blackout -X`: Interactively export data in json, toml, or DB format
++ `blackout export notes` OR `blackout -XN`: Interactively export notes in json, toml, or DB format
++ `blackout export notes -j` OR `blackout -XNj`: Export notes in json format
++ `blackout export totps -t` OR `blackout -XTt`: Export totp urls in toml format
++ `blackout export both -j` OR `blackout -XBj`: Export notes and totp urls in json format
 
 ### Fetch note/totp code (Display note or totp code in terminal)
-```shell
+```
 Fetch notes or totp
 
 Usage: blackout {fetch|-F} [COMMAND]
@@ -159,51 +210,21 @@ Options:
   -h, --help  Print help
 ```
 
-#### Fetch note
-```shell
-Fetch note
-
-Usage: blackout fetch {note|-N} [LABEL]
-
-Arguments:
-  [LABEL]  Note to fetch and display
-
-Options:
-  -h, --help  Print help
-```
-
 Examples:
-- Fetch note:
-  + `blackout fetch note` OR `blackout -FN`: Interactively fetch a saved note.
-  + `blackout fetch note test` OR `blackout -FN test`: Fetch note labeled test or fails if note does not exist.
++ `blackout fetch` OR `blackout -F`: Interactively fetch note or totp code
++ `blackout fetch note` OR `blackout -FN`: Interactively fetch note
++ `blackout fetch totp github` OR `blackout -FT github`: Fetch totp code labeled *github*
 
-#### Fetch totp code
-```shell
-Fetch TOTP
-
-Usage: blackout fetch {totp|-T} [LABEL]
-
-Arguments:
-  [LABEL]  totp code to fetch and display
-
-Options:
-  -h, --help  Print help
+### Generate password, passphrase, or seed phrase
 ```
-
-Examples:
-- Fetch totp:
-  + `blackout fetch totp` OR `blackout -FT`: Interactively fetch a totp code.
-  + `blackout fetch totp test` OR `blackout -FT test`: Fetch totp code labeled test or fails if totp url does not exist.
-
-### Generate password/passphrase
-```shell
-Generate password/passphrase
+Generate password, passphrase, or seed phrase
 
 Usage: blackout {generate|-G} [COMMAND]
 
 Commands:
   pass, -W    Generate password
   phrase, -P  Generate passphrase (BIP-39 word list)
+  seed, -S    Generate 24 word seed phrase (BIP-39 word list)
   help        Print this message or the help of the given subcommand(s)
 
 Options:
@@ -211,7 +232,7 @@ Options:
 ```
 
 #### Generate password
-```shell
+```
 Generate password
 
 Usage: blackout generate {pass|-W} [OPTIONS]
@@ -223,13 +244,12 @@ Options:
 ```
 
 Examples:
-- Generate password:
-  + `blackout generate pass` OR `blackout -GW`: Generate a password of 15 characters with numbers, upper/lowercase, and special characters.
-  + `blackout generate pass -i` OR `blackout -GWi`: Interactively generate a password.
-  + `blackout generate pass -l 18` OR `blackout -GWl 18`: Generate a password of 18 characters.
+- `blackout generate pass` OR `blackout -GW`: Generate a password of 15 characters with numbers, upper/lowercase, and special characters.
+- `blackout generate pass -i` OR `blackout -GWi`: Interactively generate a password.
+- `blackout generate pass -l 18` OR `blackout -GWl 18`: Generate a password of 18 characters.
 
 #### Generate passphrase
-```shell
+```
 Generate passphrase (BIP-39 word list)
 
 Usage: blackout generate {phrase|-P} [OPTIONS]
@@ -240,32 +260,39 @@ Options:
 ```
 
 Examples:
-- Generate passphrase:
-  + `blackout generate phrase` OR `blackout -GP`: Generate a passphrase of 5 words.
-  + `blackout generate phrase -l 8` OR `blackout -GPl 8`: Generate a passphrase of 8 characters.
+- `blackout generate phrase` OR `blackout -GP`: Generate a passphrase of 5 words.
+- `blackout generate phrase -l 8` OR `blackout -GPl 8`: Generate a passphrase of 8 words.
+
+#### Generate seed phrase
+```
+Generate 24 word seed phrase (BIP-39 word list)
+
+Usage: blackout generate {seed|-S}
+
+Options:
+  -h, --help  Print help
+```
 
 ### List notes or totp (LABELS ONLY)
 This will only list labels. To get a full list of sensitive content (totp urls and notes) see [[Export data for migration or for parsing]].
-```shell
+```
 List note or totp labels only
 
 Usage: blackout {list|-L} [COMMAND]
 
 Commands:
-  note, -N  List note labels
-  notes     List note labels
-  totp, -T  List TOTP labels
-  help      Print this message or the help of the given subcommand(s)
+  notes, -N  List note lables
+  totps, -T  List TOTP labels
+  help       Print this message or the help of the given subcommand(s)
 
 Options:
   -h, --help  Print help
 ```
 
 Examples:
-+ `blackout export` OR `blackout -E`: Export blackout database. DATA REMAINS ENCRYPTED
-+ `blackout export -j` OR `blackout -Ej`: Export notes and totp urls to json format. NOT ENCRYPTED
-+ `blackout export -t` OR `blackout -Et`: Export notes and totp urls to toml format. NOT ENCRYPTED
-
++ `blackout list` OR `blackout -L`: List note and totp labels
++ `blackout list notes` OR `blackout -LN`: List note labels
++ `blackout list totps` OR `blackout -LT`: List totp labels
 
 ## Donate
 - **BTC**: `bc1qvx8q2xxwesw22yvrftff89e79yh86s56y2p9x9`

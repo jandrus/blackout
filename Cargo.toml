@@ -1,10 +1,10 @@
 [package]
 name = "blackout"
-version = "0.1.2"
+version = "1.0.0"
 authors = ["James Andrus"]
 license = "GPL-3.0"
 edition = "2021"
-description = "Encrypted password/notes and totp manager written in Rust"
+description = "Encrypted totp and password/notes manager written in Rust"
 categories = ["command-line-utilities"]
 readme = "README.md"
 homepage = "https://github.com/jandrus/"
@@ -15,9 +15,9 @@ name = "lib"
 path = "src/lib.rs"
 
 [dependencies]
-anyhow = "1.0.83"
+anyhow = "1.0.86"
 chrono = "0.4.38"
-clap = "4.5.4"
+clap = "4.5.13"
 clipboard = "0.5.0"
 colored = "2.1.0"
 dialoguer = "0.11.0"
@@ -26,13 +26,13 @@ hex = "0.4.3"
 md5 = "0.7.0"
 rand = "0.8.5"
 rand_chacha = "0.3.1"
-reqwest = { version = "0.12.4", features = ["blocking"] }
-rusqlite = { version = "0.31.0", features = ["bundled-sqlcipher-vendored-openssl"] }
+reqwest = { version = "0.12.5", features = ["blocking"] }
+rusqlite = { version = "0.32.1", features = ["bundled-sqlcipher-vendored-openssl"] }
 secstr = "0.5.1"
-serde = "1.0.201"
-serde_derive = "1.0.201"
-serde_json = "1.0.117"
+serde = { version = "1.0.204", features = ["serde_derive"] }
+serde_derive = "1.0.204"
+serde_json = "1.0.122"
 term_size = "0.3.2"
-toml = "0.8.12"
-totp-rs = { version = "5.5.1", features = ["otpauth"] }
-which = "6.0.1"
+toml = "0.8.19"
+totp-rs = { version = "5.6.0", features = ["otpauth"] }
+which = "6.0.2"

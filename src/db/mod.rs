@@ -222,7 +222,7 @@ pub fn update_entry(pass: &SecVec<u8>, entry: Entry, orig_entry: Entry) -> Resul
     Ok(())
 }
 
-pub fn delte_entry(pass: &SecVec<u8>, entry: &Entry) -> Result<()> {
+pub fn delete_entry(pass: &SecVec<u8>, entry: &Entry) -> Result<()> {
     let conn = connect_db(pass)?;
     let stmt_str = format!(
         "DELETE FROM {} WHERE label='{}'",
