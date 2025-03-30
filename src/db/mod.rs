@@ -26,7 +26,7 @@ use serde_derive::{Deserialize, Serialize};
 pub struct Entry {
     pub timestamp: i64,
     pub label: String,
-    pub catagory: String,
+    pub category: String,
     pub content: String,
     pub entry_type: EntryType,
 }
@@ -52,12 +52,12 @@ pub fn get_entries(pass: &SecVec<u8>, entry_type: &EntryType) -> Result<Vec<Entr
     let rows = stmt.query_map([], |row| {
         let timestamp: i64 = row.get(0)?;
         let label: String = row.get(1)?;
-        let catagory: String = row.get(2)?;
+        let category: String = row.get(2)?;
         let content: String = row.get(3)?;
         Ok(Entry {
             timestamp,
             label,
-            catagory,
+            category,
             content,
             entry_type: entry_type.clone(),
         })
@@ -85,8 +85,8 @@ pub fn is_empty(pass: &SecVec<u8>, entry_type: &EntryType) -> Result<bool> {
 
 pub fn init(pass: &SecVec<u8>) -> Result<()> {
     let conn = connect_db(pass)?;
-    conn.execute(&format!("CREATE TABLE IF NOT EXISTS {} (timestamp INTEGER, label TEXT UNIQUE, catagory TEXT, content TEXT)", EntryType::Note.table()), ())?;
-    conn.execute(&format!("CREATE TABLE IF NOT EXISTS {} (timestamp INTEGER, label TEXT UNIQUE, catagory TEXT, content TEXT)", EntryType::Totp.table()), ())?;
+    conn.execute(&format!("CREATE TABLE IF NOT EXISTS {} (timestamp INTEGER, label TEXT UNIQUE, category TEXT, content TEXT)", EntryType::Note.table()), ())?;
+    conn.execute(&format!("CREATE TABLE IF NOT EXISTS {} (timestamp INTEGER, label TEXT UNIQUE, category TEXT, content TEXT)", EntryType::Totp.table()), ())?;
     Ok(())
 }
 
@@ -105,12 +105,12 @@ pub fn validate_password_with_db(raw_pass: &str) -> Result<(), String> {
 pub fn add_entry(pass: &SecVec<u8>, entry: Entry) -> Result<()> {
     let conn = connect_db(pass)?;
     let stmt = format!(
-        "INSERT INTO {} (timestamp, label, catagory, content) VALUES (?1, ?2, ?3, ?4)",
+        "INSERT INTO {} (timestamp, label, category, content) VALUES (?1, ?2, ?3, ?4)",
         entry.entry_type.table()
     );
     conn.execute(
         &stmt,
-        (entry.timestamp, entry.label, entry.catagory, entry.content),
+        (entry.timestamp, entry.label, entry.category, entry.content),
     )?;
     Ok(())
 }
@@ -125,12 +125,12 @@ pub fn get_entry(pass: &SecVec<u8>, label: String, entry_type: &EntryType) -> Re
     let rows = stmt.query_map([], |row| {
         let timestamp: i64 = row.get(0)?;
         let label: String = row.get(1)?;
-        let catagory: String = row.get(2)?;
+        let category: String = row.get(2)?;
         let content: String = row.get(3)?;
         Ok(Entry {
             timestamp,
             label,
-            catagory,
+            category,
             content,
             entry_type: entry_type.clone(),
         })
@@ -145,7 +145,7 @@ pub fn get_catagories(pass: &SecVec<u8>, entry_type: &EntryType) -> Result<Vec<S
     let mut catagories: Vec<String> = vec![];
     let conn = connect_db(pass)?;
     let mut stmt = conn.prepare(&format!(
-        "SELECT DISTINCT catagory FROM {}",
+        "SELECT DISTINCT category FROM {}",
         entry_type.table()
     ))?;
     let rows = stmt.query_map([], |row| {
@@ -162,13 +162,13 @@ pub fn get_catagories(pass: &SecVec<u8>, entry_type: &EntryType) -> Result<Vec<S
 pub fn get_labels(
     pass: &SecVec<u8>,
     entry_type: &EntryType,
-    catagory: Option<&str>,
+    category: Option<&str>,
 ) -> Result<Vec<String>> {
     let mut labels: Vec<String> = vec![];
     let conn = connect_db(pass)?;
-    let stmt_str = match catagory {
+    let stmt_str = match category {
         Some(s) => format!(
-            "SELECT label FROM {} WHERE catagory='{}'",
+            "SELECT label FROM {} WHERE category='{}'",
             entry_type.table(),
             s
         ),
@@ -199,12 +199,12 @@ pub fn update_entry(pass: &SecVec<u8>, entry: Entry, orig_entry: Entry) -> Resul
         );
         conn.execute(&stmt_str, [])?;
     }
-    if entry.catagory != orig_entry.catagory {
+    if entry.category != orig_entry.category {
         let stmt_str = format!(
-            "UPDATE {} SET timestamp='{}',catagory='{}' WHERE label='{}'",
+            "UPDATE {} SET timestamp='{}',category='{}' WHERE label='{}'",
             entry.entry_type.table(),
             timestamp,
-            entry.catagory,
+            entry.category,
             entry.label
         );
         conn.execute(&stmt_str, [])?;

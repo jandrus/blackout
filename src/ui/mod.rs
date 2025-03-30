@@ -71,22 +71,22 @@ pub fn edit_entry(
         let orig_entry = entry.clone();
         let attr_to_edit = match entry_type {
             db::EntryType::Note => get_selection_from_user(
-                "Edit label, catagory, or note",
+                "Edit label, category, or note",
                 true,
                 &[
                     "label".to_owned(),
-                    "catagory".to_owned(),
+                    "category".to_owned(),
                     "note".to_owned(),
                     "Go back".to_owned(),
                 ],
                 conf.color,
             )?,
             db::EntryType::Totp => get_selection_from_user(
-                "Edit label, catagory, or totp url",
+                "Edit label, category, or totp url",
                 true,
                 &[
                     "label".to_owned(),
-                    "catagory".to_owned(),
+                    "category".to_owned(),
                     "totp url".to_owned(),
                     "Go back".to_owned(),
                 ],
@@ -102,18 +102,18 @@ pub fn edit_entry(
             1 => {
                 let mut catagories = db::get_catagories(pass, &entry_type)?;
                 catagories.push("Add New".to_string());
-                let catagory_idx =
-                    get_selection_from_user("Choose catagory", true, &catagories, conf.color)?;
-                let catagory: String = match catagories[catagory_idx] == "Add New" {
+                let category_idx =
+                    get_selection_from_user("Choose category", true, &catagories, conf.color)?;
+                let category: String = match catagories[category_idx] == "Add New" {
                     true => match conf.color {
                         true => {
-                            get_input_from_user("Enter catagory", &catagories, true, conf.color)?
+                            get_input_from_user("Enter category", &catagories, true, conf.color)?
                         }
-                        false => Input::new().with_prompt("Enter catagory").interact_text()?,
+                        false => Input::new().with_prompt("Enter category").interact_text()?,
                     },
-                    false => catagories[catagory_idx].clone(),
+                    false => catagories[category_idx].clone(),
                 };
-                entry.catagory = catagory;
+                entry.category = category;
             }
             2 => match entry_type {
                 db::EntryType::Note => {
@@ -235,14 +235,14 @@ pub fn list_labels(
     };
     let catagories = db::get_catagories(pass, &entry_type)?;
     let last_cat = catagories.last().unwrap().clone();
-    for catagory in catagories {
-        if catagory == last_cat {
+    for category in catagories {
+        if category == last_cat {
             if conf.color {
-                println!("└── {}", catagory.blue());
+                println!("└── {}", category.blue());
             } else {
-                println!("└── {}", catagory);
+                println!("└── {}", category);
             }
-            let labels = db::get_labels(pass, &entry_type, Some(&catagory))?;
+            let labels = db::get_labels(pass, &entry_type, Some(&category))?;
             let last_label = labels.last().unwrap().clone();
             for label in labels {
                 if label == last_label {
@@ -259,11 +259,11 @@ pub fn list_labels(
             }
         } else {
             if conf.color {
-                println!("├── {}", catagory.blue());
+                println!("├── {}", category.blue());
             } else {
-                println!("├── {}", catagory);
+                println!("├── {}", category);
             }
-            let labels = db::get_labels(pass, &entry_type, Some(&catagory))?;
+            let labels = db::get_labels(pass, &entry_type, Some(&category))?;
             let last_label = labels.last().unwrap().clone();
             for label in labels {
                 if label == last_label {
@@ -293,13 +293,13 @@ pub fn get_user_entry(
     let label = get_input_from_user("Enter label", &labels, true, conf.color)?;
     let mut catagories = db::get_catagories(pass, &entry_type)?;
     catagories.push("Add New".to_string());
-    let catagory_idx = get_selection_from_user("Choose catagory", true, &catagories, conf.color)?;
-    let catagory: String = match catagories[catagory_idx] == "Add New" {
+    let category_idx = get_selection_from_user("Choose category", true, &catagories, conf.color)?;
+    let category: String = match catagories[category_idx] == "Add New" {
         true => match conf.color {
-            true => get_input_from_user("Enter catagory", &catagories, true, conf.color)?,
-            false => Input::new().with_prompt("Enter catagory").interact_text()?,
+            true => get_input_from_user("Enter category", &catagories, true, conf.color)?,
+            false => Input::new().with_prompt("Enter category").interact_text()?,
         },
-        false => catagories[catagory_idx].clone(),
+        false => catagories[category_idx].clone(),
     };
     let timestamp = lib::get_timestamp();
     let content: String = match entry_type {
@@ -325,7 +325,7 @@ pub fn get_user_entry(
     Ok(db::Entry {
         timestamp,
         label,
-        catagory,
+        category,
         content,
         entry_type: entry_type.clone(),
     })
@@ -441,12 +441,12 @@ pub fn select_entry(
 ) -> Result<Option<db::Entry>> {
     let mut catagories = db::get_catagories(pass, entry_type)?;
     catagories.push("Go back".to_owned());
-    let catagory_idx = get_selection_from_user("Select catagory", true, &catagories, color)?;
-    if catagory_idx == catagories.len() - 1 {
+    let category_idx = get_selection_from_user("Select category", true, &catagories, color)?;
+    if category_idx == catagories.len() - 1 {
         return Ok(None);
     }
-    let catagory = catagories[catagory_idx].clone();
-    let mut labels = db::get_labels(pass, entry_type, Some(&catagory))?;
+    let category = catagories[category_idx].clone();
+    let mut labels = db::get_labels(pass, entry_type, Some(&category))?;
     labels.push("Go back".to_owned());
     let label_idx = get_selection_from_user("Select label", true, &labels, color)?;
     if label_idx == labels.len() - 1 {
